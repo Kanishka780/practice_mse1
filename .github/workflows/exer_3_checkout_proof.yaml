@@ -1,0 +1,29 @@
+name: Checkout Proof
+
+on:
+  push:
+  workflow_dispatch:
+
+jobs:
+  prove:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Before checkout
+        run: |
+          pwd
+          ls -la
+
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: After checkout
+        run: |
+          ls -la
+
+      - name: Count files
+        run: |
+          find . -type f | wc -l
+
+      - name: Complete proof
+        run: echo "Proof captured"

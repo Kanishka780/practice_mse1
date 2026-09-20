@@ -1,0 +1,30 @@
+name: Subfolder Builder
+
+on:
+  push:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        working-directory: app
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Confirm build folder
+        run: |
+          pwd
+          ls -la
+
+      - name: Complete build
+        run: echo "Build folder confirmed"

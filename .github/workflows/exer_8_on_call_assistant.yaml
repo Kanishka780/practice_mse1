@@ -1,0 +1,116 @@
+name: On-Call Assistant
+
+on:
+  push:
+    branches:
+      - main
+
+  pull_request:
+    branches:
+      - main
+
+  workflow_dispatch:
+
+
+permissions:
+  actions: read
+  contents: read
+  pull-requests: write
+
+
+jobs:
+
+  lint:
+    runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        working-directory: app
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Run lint
+        run: npm run lint
+
+
+  test:
+    runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        working-directory: app
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Run tests
+        run: npm test
+
+
+  build:
+    runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        working-directory: app
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Build application
+        run: npm run build
+
+
+  analyze:
+    runs-on: ubuntu-latest
+
+    needs:
+      - lint
+      - test
+      - build
+
+    if: ${{ failure() }}
+
+    steps:
+      - name: Analyze CI failures with SenseTheLog
+        id: sensethelog
+        uses: sensethelog/action@v1
+        with:
+          sensethelog-api-key: ${{ secrets.SENSETHELOG_API_KEY }}
+
+      - name: Print SenseTheLog results
+        run: |
+          echo "Recurring failure: ${{ steps.sensethelog.outputs.is-recurring }}"
+          echo "Error signature: ${{ steps.sensethelog.outputs.signature }}"
+
+
+  notify-on-recurrence:
+    runs-on: ubuntu-latest
+
+    needs: analyze
+
+    if: ${{ needs.analyze.outputs.is-recurring == 'true' }}
+
+    steps:
+      - name: Priority recurrence notification
+        run: |
+          echo "This exact failure has happened before and should be treated as a priority fix rather than re-run and forgotten."
