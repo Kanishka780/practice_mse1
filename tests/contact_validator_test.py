@@ -42,3 +42,14 @@ def test_mask_email_basic():
 
     # Assert
     assert result == "pr***@example.com"
+    
+def test_normalize_phone():
+    """Test that a phone number is normalized to digits only."""
+    # Arrange
+    phone = "555-123-4567"
+
+    # Act
+    result = normalize_phone(phone)
+
+    # Assert
+    assert result == "5551234567"
